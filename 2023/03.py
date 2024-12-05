@@ -1,83 +1,79 @@
+# https://adventofcode.com/2023/day/3
 import re
 
-f = open("2023/inputs/03a.txt", "r", encoding="utf-8")
-
+f = open("2023/inputs/03.txt", "r", encoding="utf-8")
 grid = f.read().split("\n")
+
+grid_height = len(grid)
+grid_width = len(grid[0])
+
+def isSym(c):
+    if c == "." or c.isdigit():
+        return False
+    else:
+        return True
+
+def isPart(row, col_span):
+
+    # Check Before
+    if col_span[0] - 1 >= 0:
+        if isSym(grid[row][col_span[0] - 1]):
+            return True
+
+    # Check After
+    if col_span[1] < grid_width:
+        if isSym(grid[row][col_span[1]]):
+            return True
+
+    # Check Below
+    if row + 1 < grid_width:
+        for c in range(col_span[0], col_span[1]):
+            if isSym(grid[row + 1][c]):
+                return True
+
+        # Check bottom right
+        if col_span[1] + 1 < grid_width:
+            if isSym(grid[row + 1][col_span[1]]):
+                return True
+
+        # Check bottom left
+        if col_span[0] - 1 >= 0:
+            if isSym(grid[row + 1][col_span[0] - 1]):
+                return True
+
+    # Check Above
+    if row - 1 >= 0:
+        for c in range(col_span[0], col_span[1]):
+            if isSym(grid[row - 1][c]):
+                return True
+
+        # Check above right
+        if col_span[1] + 1 < grid_width:
+            if isSym(grid[row - 1][col_span[1]]):
+                return True
+
+        # Check above left
+        if col_span[0] - 1 >= 0:
+            if isSym(grid[row - 1][col_span[0]- 1]):
+                return True
+
+    return False
 
 def part1():
 
     row = 0
-    part_nums = set()
+    nums = []
+    digit_regex = re.compile(r"\d{1,3}")
 
     for line in grid:
-        col = 0
-
-        while col < len(line) - 1:
-            start = col
-
-            while line[col].isdigit():
-                col += 1
-
-            end = col
-
-            # before
-            try:
-                if start - 1 < 0:
-                    break
-                check = grid[row][start - 1]
-                if not check == ".":
-                    part_nums.add(line[start:end])
-            except:
+        for match in re.finditer(digit_regex, line):
+            if match.group(0) == "617":
                 pass
-
-            # after
-            try:
-                if end + 1 > len(line):
-                    break
-                check = grid[row][end + 1]
-                if not check == ".":
-                    part_nums.add(line[start:end])
-            except:
-                pass
-
-            # down
-            try:
-                if row - 1 < 0:
-                    break
-
-                if end + 1 > len(line):
-                    last = len(line)
-                else:
-                    last = end + 1
-
-                for temp_col in range(start, last):
-                    check = grid[row - 1][temp_col]
-                    if not check == ".":
-                        part_nums.add(line[start:end])
-            except:
-                pass
-
-            # up
-            try:
-                if row - 1 < 0:
-                    break
-                if end + 1 > len(line):
-                    last = len(line)
-                else:
-                    last = end + 1
-                for temp_col in range(start,end + 1):
-                    check = grid[row - 1][temp_col]
-                    if not check == ".":
-                        part_nums.add(line[start:end])
-            except:
-                pass
-
-            col += 1
-
+            if isPart(row, match.span()):
+                nums.append(match.group(0))
         row += 1
 
-    for line in part_nums:
-        print(line)
+    print(sum(map(int,nums)))
 
 def part2():
 
